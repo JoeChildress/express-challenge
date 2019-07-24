@@ -20,21 +20,42 @@ router.get('/', function(req, res, next) {
 		let results = []
 		let searchVal = req.query['search']
 
+		//CHECK FOR TYPE OF SEARCH VALUE
+		console.log(typeof searchVal)
+
 		//maybe use Object.key and map?
 		//** update for indexOf***************************
 
 		for(var i=0; i<customers.length; i++) {
 			for(key in customers[i]) {
-				//string.indexOf(substring) !== -1
-				if(customers[i].hasOwnProperty(key) && customers[i][key] === searchVal) {
+				
+				//TEST FOR NUMBER IN SEARCH VALUE
+					// if (typof searchVal === 'number'){
+					// 	console.log('number value searchVal: ', customers[i][key])
+					// }
+				let propVal = customers[i][key]
+				//TEST FOR NUMBER IN SEARCH VALUE
+					if ((typeof propVal) === 'number') {
+					//if ((typeof customers[i][key]) === 'number') {
+						//console.log('number property value: ', customers[i][key])
+						//customers[i][key] = customers[i][key].toString()
+						propVal = propVal.toString()
+					}
+			
+				//console.log(typeof customers[i][key])
 
+				//string.indexOf(substring) !== -1
+				//if(customers[i].hasOwnProperty(key) && customers[i][key] === searchVal) {
+				if(customers[i].hasOwnProperty(key) && propVal.includes(searchVal)) {	
+					console.log('value match!')
 				//if(customers[i].hasOwnProperty(key) && customers[i][key].toString.contains(searchVal) ) {
 					results.push(customers[i]);
 				}
 			}
 		  }
 
-		res.send('search used')
+		//res.send('search used')
+		res.send(results)
 
 	}else if(req.query['search'] && req.query['field']){
 
@@ -66,7 +87,7 @@ router.get('/', function(req, res, next) {
 
 //id used
 router.get('/:id', (req, res) => {
-	console.log('id used');
+	//console.log('id used');
 	const id = Number(req.params.id);
 
 	let result = customers.filter(obj => {
