@@ -18,84 +18,91 @@ router.get('/', function(req, res, next) {
 		console.log('search only used');
 
 		let results = []
-		let searchVal = req.query['search']
+		let searchVal = req.query['search'].toLowerCase()
 
 		//CHECK FOR TYPE OF SEARCH VALUE
 		console.log(typeof searchVal)
 
 		//maybe use Object.key and map?
-		//** update for indexOf***************************
 
 		for(var i=0; i<customers.length; i++) {
 			for(key in customers[i]) {
-				
-				//TEST FOR NUMBER IN SEARCH VALUE
-					// if (typof searchVal === 'number'){
-					// 	console.log('number value searchVal: ', customers[i][key])
-					// }
-				let propVal = customers[i][key]
-				//TEST FOR NUMBER IN SEARCH VALUE
-					if ((typeof propVal) === 'number') {
-					//if ((typeof customers[i][key]) === 'number') {
-						//console.log('number property value: ', customers[i][key])
-						//customers[i][key] = customers[i][key].toString()
-						propVal = propVal.toString()
-					}
-			
-				//console.log(typeof customers[i][key])
 
-				//string.indexOf(substring) !== -1
-				//if(customers[i].hasOwnProperty(key) && customers[i][key] === searchVal) {
-				if(customers[i].hasOwnProperty(key) && propVal.includes(searchVal)) {	
-					console.log('value match!')
-				//if(customers[i].hasOwnProperty(key) && customers[i][key].toString.contains(searchVal) ) {
+				let propVal = customers[i][key]
+
+				//CONVERT PROP VAL TO STRING
+				if ((typeof propVal) === 'number') {
+					propVal = propVal.toString()
+				}
+
+				if(customers[i].hasOwnProperty(key) && propVal.toLowerCase().includes(searchVal)) {
 					results.push(customers[i]);
 				}
 			}
 		  }
 
-		//res.send('search used')
 		res.send(results)
+		//res.send(checkRes(results))
 
 	}else if(req.query['search'] && req.query['field']){
 
 			console.log('search and field used');
+
 		// SEARCH AND FIELD PARAMS  **************************/
 
 		let results = []
-		let searchVal = req.query['search']
+		let searchVal = req.query['search'].toLowerCase()
 		let fieldVal = req.query['field']
+		
 
-			console.log(`search: ${searchVal} and field: ${fieldVal} `);
+		console.log(`search: ${searchVal} and field: ${fieldVal} `);
 
-		for(var i=0; i<customers.length; i++) {
+		if (searchVal && fieldVal) {
+			for(var i=0; i<customers.length; i++) {
+				let propVal = customers[i][fieldVal]
 
-			if (customers[i][fieldVal] === searchVal){
-				results.push(customers[i]);
-			}
+				//CONVERT PROP VAL TO STRING
+				if ((typeof propVal) === 'number') {
+					propVal = propVal.toString()
+				}
 
-		  }
+				if (propVal && propVal.toLowerCase().includes(searchVal)){
+					results.push(customers[i]);
+				}
+			  }
 
-		res.send(results)
+			//res.send(checkRes(results))
+			res.send(results)
+		}
 	}else{
 
-		//no params
+		//NO PARAMS
 		res.send(customers)
 	}
 
 });
 
-//id used
+//ID **************************/
 router.get('/:id', (req, res) => {
-	//console.log('id used');
+
 	const id = Number(req.params.id);
 
 	let result = customers.filter(obj => {
 		return obj.id === id;
 	});
 
-	res.send(result[0]);
+	//res.send(result[0]);
+	res.send(result);
+	//res.send(checkRes(result))
+
 })
 
+function checkRes(res) {
+	if (res.length > 0){
+		return res
+	} else {
+		return 'No results found'
+	}
+}
 
 module.exports = router;
