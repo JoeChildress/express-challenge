@@ -30,9 +30,17 @@ router.get('/', function(req, res, next) {
 					results.push(customers[i]);
 				}
 			}
-		  }
+		}
 
-		res.status(200).send(results);
+		if(results.length > 0){
+			res.status(200).send(results);
+		}else{
+			res.status(404).send({
+				status: "ERROR",
+				message: `No records with value of '${req.query["search"]}' found.`
+			});
+		}
+		
 
 	}else if(req.query['search'] && req.query['field']){
 
@@ -55,7 +63,15 @@ router.get('/', function(req, res, next) {
 				}
 			}
  
-			res.status(200).send(results)
+			//res.status(200).send(results)
+			if(results.length > 0){
+				res.status(200).send(results);
+			}else{
+				res.status(404).send({
+					status: "ERROR",
+					message: `No records with value of '${req.query["search"]}' in the field '${req.query["field"]}' found.`
+				});
+			}
 		}
 	}else{
 		//NO PARAMS
@@ -71,7 +87,15 @@ router.get('/:id', (req, res) => {
 		return obj.id === id;
 	});
 
-	res.status(200).send(result);
+	if(result.length > 0){
+		res.status(200).send(result[0]);
+	}else{
+		res.status(404).send({
+			status: "ERROR",
+			message: `No record with id '${req.params["id"]}' found.`
+		});
+	}
+	
 })
 
 module.exports = router;

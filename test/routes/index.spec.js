@@ -1,29 +1,85 @@
 const request = require('supertest');
-const app = require('../../server')
+const app = require('../../server');
+const data = require('../../src/data/MOCK_DATA.json');
 
-describe('Test the index route', () => {
-  it('it responds as expected', () => {
+describe('Vehicle Owner Data API', () => {
+
+  //BASE ROUTE
+  it('Base route call returns all data', (done) => {
     request(app).get('/').then((response) => {
       expect(response.statusCode).toBe(200);
-      expect(response.body.length).toBeGreaterThan(0);
+      expect(response.body).toEqual(data);
     });
+    done();
   });
-});
 
-describe('Test the index route with search param', () => {
-  it('it responds as expected', () => {
-    request(app).get('/?search=Mitsubishi').then((response) => {
+  //ID MATCH SUCCESSFUL
+  it('Route with ID returns the matching ID data', (done) => {
+    request(app).get('/49').then((response) => {
       expect(response.statusCode).toBe(200);
-      expect(response.body.length).toBeGreaterThan(0);
+      expect(response.body).toEqual(data[48]);
     });
+    done();
   });
-});
 
-describe('Test the index route with search and field params', () => {
-    it('it responds as expected', () => {
-      request(app).get('/?search=Mitsubishi&field=vehicle_make').then((response) => {
-        expect(response.statusCode).toBe(200);
-        expect(response.body.length).toBeGreaterThan(0);
+  //ID NO MATCH
+  it('Responds with 404 when no matching ID is found', (done) => {
+    request(app).get('/nonid').then((response) => {
+      expect(response.statusCode).toBe(404);
+      expect(response.body).toEqual({
+        status: "ERROR",
+        message: "No record with id 'nonid' found."
       });
     });
+    done();
+  });
+
+  //SEARCH MATCH SUCCESSFUL
+  it('Responds with 4 results using search param value of Escalade', (done) => {
+    request(app).get('/?search=Escalade').then((response) => {
+      expect(response.statusCode).toBe(200);
+      expect(response.body[0].id).toEqual(14);
+      expect(response.body[1].id).toEqual(216);
+      expect(response.body[2].id).toEqual(289);
+      expect(response.body[3].id).toEqual(437);
+      expect(response.body[4]).toBeUndefined();
+    });
+    done();
+  });
+
+  //SEARCH NO MATCH
+  it('Responds with 404 when ?search=Test is used and no matching value is found', (done) => {
+    request(app).get('/?search=Test').then((response) => {
+      expect(response.statusCode).toBe(404);
+      expect(response.body).toEqual({
+        status: "ERROR",
+        message: "No records with value of 'Test' found."
+      });
+    });
+    done();
+  });
+
+  //SEARCH AND FIELD MATCH SUCCESSFUL
+  it('Responds with 2 results using ?search=Ford&field=first_name', (done) => {
+    request(app).get('/?search=Ford&field=first_name').then((response) => {
+      expect(response.statusCode).toBe(200);
+      expect(response.body[0].id).toEqual(228);
+      expect(response.body[1].id).toEqual(513);
+    });
+    done();
+  });
+
+  //SEARCH AND FIELD NO MATCH
+  it('Responds with 404 when using ?search=Test&field=first_name', (done) => {
+    request(app).get('/?search=Test&field=first_name').then((response) => {
+      expect(response.statusCode).toBe(404);
+      expect(response.body).toEqual({
+        status: "ERROR",
+        message: "No records with value of 'Test' in the field 'first_name' found."
+      });
+    });
+    done();
+  });
+
+
 });
