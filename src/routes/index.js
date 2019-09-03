@@ -1,91 +1,62 @@
 /*
+  Round 1
   When calling the API without search params, returns all data - DONE
   When calling the API with /{id}/, returns the person related to the id - DONE
   When calling the API with search={searchTerm}, returns the rows that contain the search term
   When calling the API where search={searchTerm} and field={fieldName}, returns the rows where the field (e.g. email, vehicle_make, etc.) contain the search term
 */
 
+/* 
+  Round 2
+  Move 'search' related functionality from query string to param based API (e.g. /search/Ford && /search/Ford/vehicle_make
+  Add support for searching multiple fields at once via a comma delimited list
+  Each API response must contain the following key/value pairs:
+    status: SUCCESS/ERROR
+    message: A message to API user related to why the status of the call is the status of the call
+  If an API response is successful and should contain data:
+    add a "data" key value pair
+    add a "count" key value pair
+  Add a new endpoint for returning rows where vehicle years start with x and end in y (e.g /years/2008/2010) - A year range is required.
+*/
+
 var express = require('express');
 var router = express.Router();
 var customers = require('../data/MOCK_DATA.json');
 
-router.get('/', function(req, res, next) {
-
-	// SEARCH ONLY **************************/
-	if (req.query['search'] && !req.query['field']) {
-		let results = [];
-		let searchVal = req.query['search'].toLowerCase();
-
-		for(var i=0; i<customers.length; i++) {
-			for(key in customers[i]) {
-
-				let propVal = customers[i][key];
-
-				//CONVERT PROP VAL TO STRING
-				if ((typeof propVal) === 'number') {
-					propVal = propVal.toString();
-				}
-
-				if(customers[i].hasOwnProperty(key) && propVal.toLowerCase().includes(searchVal)) {
-					results.push(customers[i]);
-				}
-			}
-		}
-
-		if(results.length > 0){
-			res.status(200).send(results);
-		}else{
-			res.status(404).send({
-				status: "ERROR",
-				message: `No records with value of '${req.query["search"]}' found.`
-			});
-		}
-		
-
-	}else if(req.query['search'] && req.query['field']){
-
-		// SEARCH AND FIELD PARAMS  **************************/
-		let results = [];
-		let searchVal = req.query['search'].toLowerCase();
-		let fieldVal = req.query['field'];
-
-		if (searchVal && fieldVal) {
-			for(var i=0; i<customers.length; i++) {
-				let propVal = customers[i][fieldVal];
-
-				//CONVERT PROP VAL TO STRING
-				if ((typeof propVal) === 'number') {
-					propVal = propVal.toString();
-				}
-
-				if (propVal && propVal.toLowerCase().includes(searchVal)){
-					results.push(customers[i]);
-				}
-			}
- 
-			//res.status(200).send(results)
-			if(results.length > 0){
-				res.status(200).send(results);
-			}else{
-				res.status(404).send({
-					status: "ERROR",
-					message: `No records with value of '${req.query["search"]}' in the field '${req.query["field"]}' found.`
-				});
-			}
-		}
-	}else{
-		//NO PARAMS
-		res.send(customers);
-	}
+router.get("/", function(req, res) {
+  let fieldFilter = req.query["field"] || false;
+  if(req.query["search"] && req.query["search"].length > 0) {
+    let matches = [];
+    customers.forEach((item) => {
+      let isAMatch = false;
+      Object.keys(item).forEach((field) => {
+        if(fieldFilter && fieldFilter.length > 0 && fieldFilter !== field) return false;
+        if(item[field].toString().toLowerCase().indexOf(req.query["search"].toLowerCase()) > -1) isAMatch = true;
+      });
+      if(isAMatch) matches.push(item);
+    });
+    if (matches.length > 1) {
+      return res.send(matches);
+    } else {
+      let message = `No records with value of '${req.query["search"]}' found.`;
+      if(fieldFilter && fieldFilter.length > 0) {
+        message = `No records with value of '${req.query["search"]}' in the field '${fieldFilter}' found.`;
+      } 
+      return res.status(404).send({
+        status: "ERROR",
+        message
+      });
+    }
+  }
+  return res.send(customers);
 });
 
 //ID **************************/
 router.get('/:id', (req, res) => {
 
-	let id = Number(req.params.id);
-	let result = customers.filter(obj => {
-		return obj.id === id;
-	});
+  const result = customers.filter(item => {
+    return item.id == req.params["id"];
+  });
 
 	if(result.length > 0){
 		res.status(200).send(result[0]);
