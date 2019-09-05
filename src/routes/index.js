@@ -19,47 +19,85 @@
   Add a new endpoint for returning rows where vehicle years start with x and end in y (e.g /years/2008/2010) - A year range is required.
 */
 
+
 var express = require('express');
 var router = express.Router();
 var customers = require('../data/MOCK_DATA.json');
 
-router.get("/", function(req, res) {
-  let fieldFilter = req.query["field"] || false;
-  if(req.query["search"] && req.query["search"].length > 0) {
+router.get("/search/:searchVal", function(req, res) {
     let matches = [];
+
     customers.forEach((item) => {
       let isAMatch = false;
       Object.keys(item).forEach((field) => {
-        if(fieldFilter && fieldFilter.length > 0 && fieldFilter !== field) return false;
-        if(item[field].toString().toLowerCase().indexOf(req.query["search"].toLowerCase()) > -1) isAMatch = true;
+        if(item[field].toString().toLowerCase().indexOf(req.params["searchVal"].toLowerCase()) > -1) isAMatch = true;
       });
       if(isAMatch) matches.push(item);
     });
     if (matches.length > 1) {
-      return res.send(matches);
+      return res.status(200).send({
+        status: "SUCCESS",
+        message: `Records with value of '${req.params["searchVal"]}' found.`,
+        data: matches,
+        count: matches.length
+      });
     } else {
-      let message = `No records with value of '${req.query["search"]}' found.`;
-      if(fieldFilter && fieldFilter.length > 0) {
-        message = `No records with value of '${req.query["search"]}' in the field '${fieldFilter}' found.`;
-      } 
       return res.status(404).send({
         status: "ERROR",
-        message
+        message : `No records with value of '${req.params["searchVal"]}' found.`
       });
     }
-  }
-  return res.send(customers);
+});
+
+router.get("/search/:searchVal/:field", function(req, res) {
+
+  let matches = [];
+    customers.forEach((item) => {
+      let isAMatch = false;
+      Object.keys(item).forEach((field) => {
+        if(req.params["field"] !== field) return false;
+        if(item[field].toString().toLowerCase().indexOf(req.params["searchVal"].toLowerCase()) > -1) isAMatch = true;
+      });
+      if(isAMatch) matches.push(item);
+    });
+    if (matches.length > 1) {
+      return res.status(200).send({
+        status: "SUCCESS",
+        message: `Records with value of '${req.params["searchVal"]}' in the field '${req.params["field"]}' found.`,
+        data: matches,
+        count: matches.length
+      });
+    } else {
+      return res.status(404).send({
+        status: "ERROR",
+        message: `No records with value of '${req.params["searchVal"]}' in the field '${req.params["field"]}' found.`
+      });
+    }
+});
+
+router.get("/", function(req, res) {
+  return res.send({
+      status: "SUCCESS",
+      message: `Records found.`,
+      data: customers,
+      count: customers.length
+    });
 });
 
 //ID **************************/
 router.get('/:id', (req, res) => {
 
-  const result = customers.filter(item => {
+  const match = customers.filter(item => {
     return item.id == req.params["id"];
   });
 
-	if(result.length > 0){
-		res.status(200).send(result[0]);
+	if(match.length > 0){
+		res.status(200).send({
+      status: "SUCCESS",
+      message: `Records with value of '${req.params["searchVal"]}' in the field '${req.params["field"]}' found.`,
+      data: match[0],
+      count: match.length
+    });
 	}else{
 		res.status(404).send({
 			status: "ERROR",
