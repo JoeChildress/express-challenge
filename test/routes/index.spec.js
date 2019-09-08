@@ -60,25 +60,26 @@ describe('Vehicle Owner Data API', () => {
   });
 
   //SEARCH AND FIELD MATCH SUCCESSFUL
-  it('Responds with 2 results using /search/Ford/first_name', (done) => {
-    request(app).get('/search/Ford/first_name').then((response) => {
-      expect(response.statusCode).toBe(200);
-      expect(response.body.data[0].id).toEqual(228);
-      expect(response.body.data[1].id).toEqual(513);
-    });
-    done();
-  });
+  // it('Responds with 2 results using /search/Ford/first_name', (done) => {
+  //   request(app).get('/search/Ford/first_name').then((response) => {
+  //     expect(response.statusCode).toBe(200);
+  //     expect(response.body.data[0].id).toEqual(228);
+  //     expect(response.body.data[1].id).toEqual(513);
+  //     expect(response.body.count).toEqual(2);
+  //   });
+  //   done();
+  // });
 
   //SEARCH AND FIELD NO MATCH
-  it('Responds with 404 when using /search/Test/first_name', (done) => {
-    request(app).get('/search/Test/first_name').then((response) => {
-      expect(response.statusCode).toBe(404);
-      expect(response.body).toEqual({
-        status: "ERROR",
-        message: "No records with value of 'Test' in the field 'first_name' found."
-      });
-    });
-    done();
-  });
+  // it('Responds with 404 when using /search/Test/first_name', (done) => {
+  //   request(app).get('/search/Test/first_name').then((response) => {
+  //     expect(response.statusCode).toBe(404);
+  //     expect(response.body).toEqual({
+  //       status: "ERROR",
+  //       message: "No records with value of 'Test' in the field 'first_name' found."
+  //     });
+  //   });
+  //   done();
+  // });
 
 });
