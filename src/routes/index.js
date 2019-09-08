@@ -38,7 +38,7 @@ router.get('/:id', (req, res) => {
 	if(match.length > 0){
 		res.status(200).send({
       status: "SUCCESS",
-      message: `A record with value of '${req.params["id"]}' in the field 'id' found.`,
+      message: `A record with value of '${req.params["id"]}' in the 'id' field found.`,
       data: match[0],
       count: match.length
     });
@@ -71,7 +71,7 @@ router.get("/search/:searchVal", function(req, res) {
   } else {
     return res.status(404).send({
       status: "ERROR",
-      message : `No records with value of '${req.params["searchVal"]}' found.`
+      message : `Records with value of '${req.params["searchVal"]}' not found.`
     });
   }
 });
@@ -99,7 +99,29 @@ router.get("/search/:searchVal/:field", function(req, res) {
   } else {
     return res.status(404).send({
       status: "ERROR",
-      message: `No records with value of '${req.params["searchVal"]}' in the field '${req.params["field"]}' found.`
+      message: `Records with value of '${req.params["searchVal"]}' in the field '${req.params["field"]}' not found.`
+    });
+  }
+});
+
+router.get("/years/:yearStart/:yearEnd", function(req, res) {
+  let matches = [];
+
+  customers.forEach((item) => {
+    if (item.vehicle_year >= req.params["yearStart"] && item.vehicle_year <= req.params["yearEnd"]) matches.push(item);
+  });
+
+  if (matches.length > 0) {
+    return res.status(200).send({
+      status: "SUCCESS",
+      message: `Records with vehicle_year between '${req.params["yearStart"]}' and '${req.params["yearEnd"]}' found.`,
+      data: matches,
+      count: matches.length
+    });
+  } else {
+    return res.status(404).send({
+      status: "ERROR",
+      message : `Records with vehicle_year between '${req.params["yearStart"]}' and '${req.params["yearEnd"]}' not found.`
     });
   }
 });
